@@ -1,0 +1,5 @@
+include pyloot/static/*.js
+include pyloot/static/*.css
+include pyloot/static/*.html
+include LICENSE
+include tox.ini

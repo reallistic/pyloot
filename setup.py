@@ -9,6 +9,7 @@ setup(
     description="Multiprocessing compatible memory leak debugger inspired by dozer/dowser",
     keywords="memory profiler multiprocessing wsgi asgi",
     url="https://github.com/reallistic/pyloot",
+    install_requires=["WebOb>=1.2", "importlib-resources"],
     extras_require={"test": ["pytest"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -22,4 +23,5 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     python_requires=">=3.6",
+    entry_points=dict(console_scripts=["pyloot=pyloot.cli:main"]),
 )
