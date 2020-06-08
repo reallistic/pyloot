@@ -112,22 +112,22 @@ app.mount("/_pyloot", WSGIMiddleware(pyloot_wrapper))
 
 # Screenshots
 ### View history of object counts by object group:
-![history screenshot](docs/historypage.png)
+![history screenshot](https://github.com/reallistic/pyloot/raw/0.0.2/docs/historypage.png)
 
 ### Modify history page size
-![history screenshot](docs/history-pageLimit.png)
+![history screenshot](https://github.com/reallistic/pyloot/raw/0.0.2/docs/history-pageLimit.png)
 
 ### Search history page
-![history screenshot](docs/history-search.png)
+![history screenshot](https://github.com/reallistic/pyloot/raw/0.0.2/docs/history-search.png)
 
 ### View objects by group
-![objects by group](docs/objects-by-group.png)
+![objects by group](https://github.com/reallistic/pyloot/raw/0.0.2/docs/objects-by-group.png)
 
 ### Modify objects fetch size
-![objects by group](docs/objects-fetchLimit.png)
+![objects by group](https://github.com/reallistic/pyloot/raw/0.0.2/docs/objects-fetchLimit.png)
 
 ### Modify objects page size
-![objects by group](docs/objects-pageLimit.png)
+![objects by group](https://github.com/reallistic/pyloot/raw/0.0.2/docs/objects-pageLimit.png)
 
 ### View an object, its attributes, __repr__, children, and parents
-![view and object](docs/object.png)
+![view and object](https://github.com/reallistic/pyloot/raw/0.0.2/docs/object.png)
