@@ -37,6 +37,15 @@ def _safe_repr(obj: object) -> str:
 
 def _safe_getattr(obj: object, k: str, default: Any = Exception):
     try:
+        from zope.interface.ro import C3
+
+        if isinstance(obj, C3) or issubclass(obj, C3):
+            if k.startswith("ORIG_"):
+                return "__ignored_zope_interface_C3_{}__".format(k)
+    except (ImportError, TypeError):
+        pass
+
+    try:
         return getattr(obj, k)
     except Exception as e:
         if default is Exception:
