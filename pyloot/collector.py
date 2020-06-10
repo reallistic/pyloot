@@ -39,7 +39,7 @@ def _safe_getattr(obj: object, k: str, default: Any = Exception):
     try:
         from zope.interface.ro import C3
 
-        if isinstance(obj, C3) or issubclass(obj, C3):
+        if isinstance(obj, C3) or issubclass(obj, C3):  # type: ignore
             if k.startswith("ORIG_"):
                 return "__ignored_zope_interface_C3_{}__".format(k)
     except (ImportError, TypeError):
@@ -92,38 +92,21 @@ def _should_include_object(ref: object, ignore_set: Set[int]) -> bool:
     return True
 
 
-def get_child_ids(obj: object, ignore_set: Set[int]) -> List[int]:
+def get_child_ids(obj: object) -> List[int]:
     """
     Return children of the provided object using gc.get_referents
 
     :param obj: The object
-    :param ignore_set: A set of `id()`s which should be ignored.
     :return: List of object ids
     """
     return [id(child) for child in gc.get_referents(obj)]
 
 
-def get_parent_ids(obj: object, ignore_set: Set[int]) -> List[int]:
-    """
-    Return children of the provided object using gc.get_referents
-
-    :param obj: The object
-    :param ignore_set: A set of `id()`s which should be ignored.
-    :return: List of object ids
-    """
-    return [
-        id(parent)
-        for parent in gc.get_referrers(obj)
-        if _should_include_object(parent, ignore_set)
-    ]
-
-
-def get_data(obj: object, ignore_set: Set[int]) -> ObjectDescriptor:
+def get_data(obj: object) -> ObjectDescriptor:
     """
     Return a Object descriptor for the given object
 
     :param obj: The object
-    :param ignore_set: A set of `id()`s which should be ignored.
     :return:
     """
     obj_type = type(obj)
@@ -134,7 +117,7 @@ def get_data(obj: object, ignore_set: Set[int]) -> ObjectDescriptor:
         id=id(obj),
         attrs=_safe_get_attrs(obj),
         parent_ids=[],
-        child_ids=get_child_ids(obj, ignore_set),
+        child_ids=get_child_ids(obj),
         repr=_safe_repr(obj),
     )
 
@@ -162,7 +145,7 @@ def get_object_descriptors(
 
     objs = [obj for obj in objs if _should_include_object(obj, ignore_set)]
     ignore_set.add(id(objs))
-    results = [get_data(obj, ignore_set) for obj in objs]
+    results = [get_data(obj) for obj in objs]
     del objs
     del ignore_set
     child_to_parent: Dict[int, Set[int]] = defaultdict(set)

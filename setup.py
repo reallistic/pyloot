@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="pyloot",
-    versioning="distance",
+    versioning="post",
     setup_requires="setupmeta",
     author="Michael Chase",
     description="Multiprocessing compatible memory leak debugger inspired by dozer/dowser",
