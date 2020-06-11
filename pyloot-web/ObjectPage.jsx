@@ -2,7 +2,7 @@ import React from "react";
 
 import { Link, useParams } from "react-router-dom";
 
-import { ellipsisText, objectGroupName, timeAgo, useApi } from "./utils";
+import { objectGroupName, timeAgo, useApi } from "./utils";
 import { ObjectItem } from "./ObjectItem";
 
 export function ObjectPage() {
@@ -26,18 +26,6 @@ export function ObjectPage() {
     !isObjectItemLoading && objectItem == null && objectItemFetchError == null;
   const showError =
     !isObjectItemLoading && objectItem == null && objectItemFetchError != null;
-  console.log({
-    objectId,
-    objectItem,
-    parents,
-    children,
-    objectItemFetchError,
-    parentsFetchError,
-    childrenFetchError,
-    showLoading,
-    showNotFound,
-    showError,
-  });
 
   if (showLoading) {
     return (
@@ -90,74 +78,91 @@ export function ObjectPage() {
     );
   }
 
-  const title = `<${objectItem["id"]}> ${objectItem["type_name"]}`;
   const groupName = objectGroupName(objectItem);
   return (
     <section className="object">
-      <div className="container">
-        <p className="title is-2">{objectItem["obj_name"]}</p>
-        <p>
-          <Link to={`/objects/${groupName}`}>{groupName}</Link> | first seen:{" "}
-          {timeAgo(objectItem["seen"])} | parents:{" "}
-          {objectItem["parent_ids"].length} | children:{" "}
-          {objectItem["child_ids"].length}
-        </p>
-      </div>
-      <div className="container">
-        <p className="title is-3">Attributes</p>
-        <div className="content">
-          <ul>
-            {Object.keys(objectItem["attrs"]).map((key) => {
-              return (
-                <li key={key}>
-                  <code>
-                    {key}: {objectItem["attrs"][key]}
-                  </code>
-                </li>
-              );
-            })}
-          </ul>
+      <article className="media">
+        <div className="media-content">
+          <p className="title is-2">{objectItem["obj_name"]}</p>
+          <p>
+            <Link to={`/objects/${groupName}`}>{groupName}</Link> | first seen:{" "}
+            {timeAgo(objectItem["seen"])} | parents:{" "}
+            {objectItem["parent_ids"].length} | children:{" "}
+            {objectItem["child_ids"].length}
+          </p>
         </div>
-      </div>
-      <div className={"container"}>
-        <p className="title is-3">__repr__</p>
-        <code>{objectItem["repr"]}</code>
-      </div>
-      <div className="tile is-ancestor">
-        <div className="tile is-vertical is-parent is-6">
-          <div className="tile is-child box">
-            <p className={"title"}>Parents</p>
-            {isParentsLoading ? (
-              <span className="loading">Loading parents....</span>
-            ) : null}
-            {!isParentsLoading && parents.length === 0 ? (
-              <span className="loading">No Parents</span>
-            ) : null}
-            <div className="media-items">
-              {parents.map((objectItem) => (
-                <ObjectItem objectItem={objectItem} key={objectItem["id"]} />
-              ))}
-            </div>
+      </article>
+      <article className="media">
+        <div className="media-content">
+          <p className="title is-3">Attributes</p>
+          <div className="content">
+            <ul>
+              {Object.keys(objectItem["attrs"]).map((key) => {
+                return (
+                  <li key={key}>
+                    <code>
+                      {key}: {objectItem["attrs"][key]}
+                    </code>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
+      </article>
+      <article className="media">
+        <div className="media-content">
+          <p className="title is-3">__repr__</p>
+          <code>{objectItem["repr"]}</code>
+        </div>
+      </article>
+      <article className="media">
+        <div className="media-content">
+          <div className="tile is-ancestor">
+            <div className="tile is-parent is-12">
+              <div className="tile is-child content">
+                <div>
+                  <p className="title">Parents</p>
+                  {isParentsLoading ? (
+                    <span className="loading">Loading parents....</span>
+                  ) : null}
+                  {!isParentsLoading && parents.length === 0 ? (
+                    <span className="loading">No Parents</span>
+                  ) : null}
+                  <div className="media-items">
+                    {parents.map((objectItem) => (
+                      <ObjectItem
+                        objectItem={objectItem}
+                        key={objectItem["id"]}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-        <div className="tile is-vertical is-parent is-6">
-          <div className="tile is-child box">
-            <p className="title">Children</p>
-            {isChildrenLoading ? (
-              <span className="loading">Loading children....</span>
-            ) : null}
-            {!isChildrenLoading && children.length === 0 ? (
-              <span className="loading">No Children</span>
-            ) : null}
-            <div className="media-items">
-              {children.map((objectItem) => (
-                <ObjectItem objectItem={objectItem} key={objectItem["id"]} />
-              ))}
+              <div className="tile is-child content">
+                <div>
+                  <p className="title">Children</p>
+                  {isChildrenLoading ? (
+                    <span className="loading">Loading children....</span>
+                  ) : null}
+                  {!isChildrenLoading && children.length === 0 ? (
+                    <span className="loading">No Children</span>
+                  ) : null}
+                  <div>
+                    {children.map((objectItem) => (
+                      <ObjectItem
+                        objectItem={objectItem}
+                        key={objectItem["id"]}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </article>
     </section>
   );
 }
