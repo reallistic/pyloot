@@ -55,6 +55,14 @@ class PyLoot:
         logger.debug("Finished starting pyloot looter thread")
 
     def stop(self, blocking=False):
+        """
+        Stop running the collector background thread.
+
+        NOTE: This does not do a "final" collection.
+        To ensure objects were collected in a short lived execution, call collect_objects().
+
+        :param blocking: When true, wait until the thread has died
+        """
         self._running = False
         if blocking:
             self._thread_ended.wait()

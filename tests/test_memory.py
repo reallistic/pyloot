@@ -5,7 +5,7 @@ from pyloot import InMemoryBackend
 def test_store_blank_slate():
     backend = InMemoryBackend()
     test_obj = dict(a=1)
-    obj_descr = collector.get_data(test_obj, set())
+    obj_descr = collector.get_data(test_obj)
     backend.store([obj_descr])
 
     descrs = backend.fetch()
@@ -29,7 +29,7 @@ def test_store_blank_slate():
     assert history[0].counts == [1, 1]
 
     test_obj2 = dict(a=1)
-    obj_descr2 = collector.get_data(test_obj2, set())
+    obj_descr2 = collector.get_data(test_obj2)
 
     # new obj should increase data and count
     backend.store([obj_descr, obj_descr2])
