@@ -1,0 +1,8 @@
+# This file only exists to keep this dir around for static asset building
+###################
+
+# Ignore all files in this dir...
+*
+
+# ... except for this one.
+!.gitignore

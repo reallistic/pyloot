@@ -31,6 +31,16 @@ Otherwise, threading.Thread is used.
 loot.start()
 
 """
+Stop running the collector background thread.
+
+NOTE: This does not do a "final" collection.
+To ensure objects were collected in a short lived execution, call collect_objects().
+
+:param blocking: When true, wait until the thread has died
+"""
+loot.stop()
+
+"""
 Return a WSGI compatible application serving the PyLoot remote backend and
 and the website.
 :return: ::class::`PyLootServer`
@@ -76,7 +86,7 @@ app = DispatcherMiddleware(app, {
 # Embedded code
 from pyloot import PyLoot
 ...
-pyloot = PyLoot(host="127.0.0.1", port=8030)
+pyloot = PyLoot(host="127.0.0.1", port=8000)
 ...
 ```
 ```shell script
@@ -86,7 +96,7 @@ usage: pyloot [-h HOST] [-p PORT] [--help]
 
 optional arguments:
 -h HOST, --host HOST  Host to listen on. (Default: 0.0.0.0)
--p PORT, --port PORT  Port to listen on. (Default: 8030)
+-p PORT, --port PORT  Port to listen on. (Default: 8000)
 --help                show this help message and exit
 ```
 
@@ -111,7 +121,7 @@ app.mount("/_pyloot", WSGIMiddleware(pyloot_wrapper))
 
 # Screenshots
 ### View history of object counts by object group:
-![history screenshot](https://raw.githubusercontent.com/reallistic/pyloot/master/docs/historypage.png)
+![history screenshot](https://raw.githubusercontent.com/reallistic/pyloot/master/docs/history.png)
 
 ### Modify history page size
 ![history screenshot](https://raw.githubusercontent.com/reallistic/pyloot/master/docs/history-pageLimit.png)

@@ -11,7 +11,9 @@ module.exports = {
     publicPath: "static",
   },
   plugins: [
-    new CleanWebpackPlugin(),
+    new CleanWebpackPlugin({
+      cleanOnceBeforeBuildPatterns: ["**/*", "!.gitignore"]
+    }),
     new HtmlWebpackPlugin({
       template: "./pyloot-web/index.html",
     }),
