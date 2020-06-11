@@ -1,5 +1,5 @@
-import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 export function sorted(arr, compare) {
   return Array.prototype.slice.call(arr).sort(compare);
@@ -17,9 +17,9 @@ export function fetchJson(url) {
         }
       });
     })
-    .then(({response, data, text}) => {
+    .then(({ response, data, text }) => {
       if (!response.ok) {
-        throw {statusText: response.statusText, data, text};
+        throw { statusText: response.statusText, data, text };
       }
       return data || text;
     });
