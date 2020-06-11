@@ -1,4 +1,5 @@
 from typing import NamedTuple
+from unittest import mock
 
 from pyloot import InMemoryBackend
 from pyloot import PyLoot
@@ -16,7 +17,11 @@ def test_collection():
     f = Foo(1, 2)
     MEM_LK_SIM.append(f)
     pyloot = PyLoot()
-    pyloot.collect_objects()
+    with mock.patch(
+        "pyloot.collector.gc.get_objects", return_value=[f]
+    ) as mocked_get_objects:
+        pyloot.collect_objects()
+        mocked_get_objects.assert_called_once_with()
     backend: InMemoryBackend = pyloot._backend
     assert isinstance(backend, InMemoryBackend)
     objs = backend.fetch()
