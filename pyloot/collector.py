@@ -128,6 +128,8 @@ def get_object_descriptors(
     """
     Return list of ::class::`ObjectDescriptor` instances for all objects in memory
     after a call to gc.collect.
+
+    WARNING: Logging in this thread can cause a race condition if gevent is enabled
     """
 
     if ignored:
@@ -139,26 +141,20 @@ def get_object_descriptors(
 
     del ignored
 
-    logger.debug("Collecting gc")
     gc.collect()
 
-    logger.debug("retrieving gc objects")
     objs: List[object] = gc.get_objects()
 
-    logger.debug("filtering gc objects")
     objs = [obj for obj in objs if _should_include_object(obj, ignore_set)]
-    logger.debug("getting data for each obj gc objects")
     results = [get_data(obj) for obj in objs]
     del objs
     del ignore_set
     child_to_parent: Dict[int, Set[int]] = defaultdict(set)
 
-    logger.debug("building child_to_parent map")
     for descr in results:
         for child_id in descr.child_ids:
             child_to_parent[child_id].add(descr.id)
 
-    logger.debug("building parent_ids")
     for descr in results:
         if descr.id in child_to_parent:
             descr.parent_ids.extend(child_to_parent[descr.id])
