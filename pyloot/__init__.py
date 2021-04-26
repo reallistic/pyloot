@@ -22,7 +22,12 @@ class PyLoot:
         port: Optional[int] = None,
         backend: Optional[BaseBackend] = None,
         interval: int = 30,
+        server: Optional[PyLootServer] = None,
     ):
+        if server:
+            if backend:
+                logger.warning("ignoring backend since server is present")
+            backend = server.get_backend()
         if backend and (host or port):
             logger.warning("ignoring host and port since backend is present")
         if backend:
@@ -34,7 +39,7 @@ class PyLoot:
 
         self._running = False
         self._thread_ended = threading.Event()
-        self._server: Optional[PyLootServer] = None
+        self._server: Optional[PyLootServer] = server
         self._interval = interval
 
     def start(self):

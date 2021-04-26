@@ -8,7 +8,7 @@ try:
 except ImportError:
     import importlib_resources as resources  # type: ignore
 
-from typing import Optional
+from typing import Dict, List, Optional, Union
 from wsgiref import simple_server
 
 from webob import exc
@@ -22,6 +22,8 @@ from pyloot.types import ObjectDescriptor
 
 logger = logging.getLogger(__name__)
 
+ResponseData = Union[List, Dict]
+
 
 def _get_param(req: Request, name: str, default=None, typ=None):
     val = req.GET.get(name)
@@ -34,7 +36,9 @@ def _get_param(req: Request, name: str, default=None, typ=None):
 
 
 class PyLootServer:
-    def __init__(self, backend: Optional[BaseBackend] = None):
+    def __init__(
+        self, backend: Optional[BaseBackend] = None, disable_response_gzip: bool = False
+    ):
         self._handlers = {
             ("GET", "/static/[a-z0-9._-]+"): self._static,
             ("GET", "/api/history"): self._get_history,
@@ -49,6 +53,19 @@ class PyLootServer:
         else:
             self._storage = InMemoryBackend()
 
+        self._disable_response_gzip: bool = disable_response_gzip
+
+    def get_backend(self) -> BaseBackend:
+        return self._storage
+
+    def _make_response(
+        self, data: ResponseData, status: Optional[int] = None
+    ) -> Response:
+        response = Response(json=data, status=status)
+        if not self._disable_response_gzip:
+            response.encode_content()
+        return response
+
     def __call__(self, environ, start_response):
         if isinstance(self._storage, InMemoryBackend):
             assert not environ["wsgi.multiprocess"], (
@@ -59,7 +76,9 @@ class PyLootServer:
     def _dispatch(self, environ, start_response):
         req = Request(environ)
         logger.info(
-            "[_dispatch] path_info=%s path=%s", req.path_info, req.path,
+            "[_dispatch] path_info=%s path=%s",
+            req.path_info,
+            req.path,
         )
 
         if req.path_info == "/" and req.method == "GET":
@@ -83,9 +102,7 @@ class PyLootServer:
         items = self._storage.fetch_history(top=top)
         data = [item._asdict() for item in items]
         logger.info("[history] returning %s items [top=%s]", len(data), top)
-        res = Response(json=data)
-        res.encode_content()
-        return res
+        return self._make_response(data)
 
     def _get_objects(self, req: Request) -> Response:
         limit = _get_param(req, "limit", typ=int)
@@ -96,9 +113,7 @@ class PyLootServer:
             items = self._storage.fetch(limit=limit)
         data = [item._asdict() for item in items]
         logger.info("[objects] returning %s items [group=%s]", len(data), group)
-        res = Response(json=data)
-        res.encode_content()
-        return res
+        return self._make_response(data)
 
     def _post_objects(self, req: Request) -> Response:
         data = gzip.GzipFile(fileobj=req.body_file).read().decode(req.charset)
@@ -106,40 +121,34 @@ class PyLootServer:
         items = [ObjectDescriptor(**item) for item in items]
         self._storage.store(items)
         logger.info("[objects] stored %s items", len(items))
-        res = Response(json={})
-        res.encode_content()
-        return res
+        return self._make_response({})
 
     def _get_object_by_id(self, _: Request, _id: str) -> Response:
         item = self._storage.fetch_by_id(int(_id))
+        status = None
         if item:
             data = item._asdict()
             logger.info("[objects_by_id] found %s [%s]", _id, item.type_name)
-            res = Response(json=data)
         else:
             logger.error("[objects_by_id] not found %s", _id)
-            res = Response(json=dict(error="Item not found"), status=404)
+            status = 404
+            data = dict(error="Item not found")
 
-        res.encode_content()
-        return res
+        return self._make_response(data, status=status)
 
     def _get_object_children(self, _: Request, _id: str) -> Response:
         items = self._storage.fetch_children_of(int(_id))
         data = [item._asdict() for item in items]
         logger.info("[object children] returning %s items [id=%s]", len(data), _id)
 
-        res = Response(json=data)
-        res.encode_content()
-        return res
+        return self._make_response(data)
 
     def _get_object_parents(self, _: Request, _id: str) -> Response:
         items = self._storage.fetch_parents_of(int(_id))
         data = [item._asdict() for item in items]
         logger.info("[object parents] returning %s items [id=%s]", len(data), _id)
 
-        res = Response(json=data)
-        res.encode_content()
-        return res
+        return self._make_response(data)
 
     def _static(self, req: Request):
         """Static path where images and other files live"""

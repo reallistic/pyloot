@@ -104,6 +104,8 @@ optional arguments:
 If pyloot detects it is running in a multiprocessing environment with an inmemory backend
 it will refuse to serve the webpages/requests.
 
+This is common for gunicorn servers running with multiple workers. If you run pyloot embedded in a gunicorn server with multiple workers statistics will be collected in each individual worker and a random worker will be selected when returning statistics. This can still give an idea of what is going on but is considered in accurate.
+
 The WSGIMiddleware of starlette sets `environ["wsgi.multiprocess"]=True` regardless of the server.
 This can by bypassed with a wrapper **use with caution**:
 
@@ -117,6 +119,36 @@ def pyloot_wrapper(wsgi_environ, start_response):
     return wsgi(pyloot_environ, start_response)
 
 app.mount("/_pyloot", WSGIMiddleware(pyloot_wrapper))
+```
+
+# Disabling gzip encoding
+By default, the pyloot server will gzip encode the response metadata.
+If pyloot is running behind a middleware that gzip encodes data the encoding could happen twice.
+This will result in the following error being shown in the UI:
+
+```text
+Error parsing the response data. Check the server logs. If everything looks ok, you make need to disable gzip in pyloot. For more info see the README.
+```
+
+To disable gzip encoding do the following:
+
+```python
+from pyloot import PyLoot
+from pyloot import PyLootServer
+
+pyloot = PyLoot(server=PyLootServer(disable_response_gzip=True))
+```
+
+
+If a remote server is used, it must be configured directly on the server like so:
+
+```python
+from pyloot import PyLoot
+from pyloot import PyLootServer
+from pyloot import HTTPRemoteBackend
+
+backend = HTTPRemoteBackend(host="127.0.0.1", port=8000)
+pyloot = PyLoot(server=PyLootServer(backend=backend, disable_response_gzip=True))
 ```
 
 # Screenshots

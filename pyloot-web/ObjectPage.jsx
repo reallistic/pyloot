@@ -73,7 +73,7 @@ export function ObjectPage() {
             </div>
           </div>
         </div>
-        <code>{objectItemFetchError.text}</code>
+        <code>{objectItemFetchError}</code>
       </section>
     );
   }
