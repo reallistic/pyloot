@@ -22,7 +22,7 @@ export function ListPage({
   if (isNaN(pageLimit)) {
     pageLimit = DEFAULT_PAGE_LIMIT;
   }
-  const [apiData, loading] = useDataLoader(url, [], true);
+  const [apiData, apiError, loading] = useDataLoader(url, [], true);
   const [page, setPage] = useState(0);
   const onPageUpdate = useMemo(() => {
     return (nextPage) => {
@@ -70,8 +70,9 @@ export function ListPage({
   const end = Math.min(start + pageLimit, data.length);
   const dataSlice = data.slice(start, end);
 
+  let showError = apiError !== null && !loading;
   let showLoading = loading && data.length === 0;
-  let showEmpty = !loading && dataSlice.length === 0;
+  let showEmpty = apiError === null && !loading && dataSlice.length === 0;
   return (
     <section className="list-page">
         <progress
@@ -119,6 +120,16 @@ export function ListPage({
       ) : null}
       {showEmpty ? (
         <span className="loading">{emptyMessage || "Empty history"}</span>
+      ) : null}
+      {showError ? (
+        <article className="message is-danger">
+          <div className="message-header">
+            <p>Error</p>
+          </div>
+          <div className="message-body">
+            {apiError}
+          </div>
+        </article>
       ) : null}
       <div className={listContainerClassName}>
         {dataSlice.map((item, index) =>

@@ -7,16 +7,29 @@ export function sorted(arr, compare) {
 
 export function fetchJson(url) {
   return fetch(url)
-    .then((response) => {
-      return response.text().then((responseText) => {
-        try {
-          const data = JSON.parse(responseText);
-          return { response, data, text: responseText };
-        } catch (e) {
-          return { response, text: responseText, data: null };
-        }
-      });
-    })
+    .then(
+      (response) => {
+        return response.text().then((responseText) => {
+          try {
+            const data = JSON.parse(responseText);
+            return { response, data, text: responseText };
+          } catch (e) {
+            if (response.ok) {
+              const text = (
+                "Error parsing the response data. Check the server logs. " +
+                "If everything looks ok, you make need to disable gzip in pyloot. " +
+                "For more info see the README."
+              );
+              throw { response, text, data: null };
+            }
+            return { response, text: responseText, data: null };
+          }
+        });
+      },
+      (error) => {
+        throw { statusText: error.message, text: error.message, data: null };
+      }
+    )
     .then(({ response, data, text }) => {
       if (!response.ok) {
         throw { statusText: response.statusText, data, text };
@@ -108,9 +121,26 @@ export function useApi(url, initialData) {
       },
       (error) => {
         setLoading(false);
-        setError(error);
+        setError(getErrorMessage(error));
       }
     );
   }, [url]);
   return [data, error, loading];
+}
+
+
+export function getErrorMessage(obj) {
+  let errorMessage = "Unknown error";
+  if (obj instanceof Error) {
+    errorMessage = obj.toString();
+  }
+  else if (obj instanceof Object) {
+    if (Object.hasOwnProperty.call(obj, "text")) {
+      errorMessage = obj.text;
+    }
+  }
+  else if (typeof obj === "string" ) {
+    errorMessage = obj;
+  }
+  return errorMessage;
 }

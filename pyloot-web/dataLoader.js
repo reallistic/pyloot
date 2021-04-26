@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { fetchJson } from "./utils";
+import { fetchJson, getErrorMessage } from "./utils";
 
 export function useDataLoader(url, initialData, initialLoading) {
   if (initialData === undefined) {
@@ -12,16 +12,21 @@ export function useDataLoader(url, initialData, initialLoading) {
 
   const [loading, setLoading] = useState(initialLoading);
   const [data, setData] = useState(initialData);
+  const [error, setError] = useState(null);
   useEffect(() => {
     setLoading(initialLoading);
     setData(initialData);
     const dataLoader = new DataLoader(
       url,
       (data) => {
+        setError(null);
         setData(data);
         setLoading(false);
       },
-      () => setLoading(false),
+      (error) => {
+          setLoading(false);
+          setError(error);
+      },
       () => setLoading(true)
     );
     dataLoader.start();
@@ -31,7 +36,7 @@ export function useDataLoader(url, initialData, initialLoading) {
     };
   }, [url]);
 
-  return [data, loading];
+  return [data, error, loading];
 }
 
 export class DataLoader {
@@ -50,6 +55,10 @@ export class DataLoader {
     console.log(`<DataLoader url=${this.url}>`, ...messages);
   }
 
+  error(...messages) {
+    console.error(`<DataLoader url=${this.url}>`, ...messages);
+  }
+
   fetchData() {
     if (this.loading) {
       this.log("Already loading data");
@@ -59,11 +68,17 @@ export class DataLoader {
     this.log("Loading data");
     this.loading = true;
     this.onLoading && this.onLoading();
-    return fetchJson(this.url).then((data) => {
-      this.loading = false;
-      this.data = data;
-      return data;
-    });
+    return fetchJson(this.url).then(
+      (data) => {
+        this.loading = false;
+        this.data = data;
+        return data;
+      },
+      (error) => {
+        this.loading = false;
+        throw error;
+      }
+    );
   }
 
   start() {
@@ -94,8 +109,9 @@ export class DataLoader {
       },
       (error) => {
         if (this.active) {
-          this.log("retrying data fetch later");
-          this.onError && this.onError(error);
+          const errorMessage = getErrorMessage(error);
+          this.error("retrying data fetch later", errorMessage);
+          this.onError && this.onError(errorMessage);
           this.timer = setTimeout(this.update.bind(this), 30 * 1000);
         }
       }
