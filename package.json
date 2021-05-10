@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "bulma": "^0.8.2",
-    "highcharts": "^8.1.1",
+    "highcharts": "^9.0.0",
     "highcharts-react-official": "^3.0.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
