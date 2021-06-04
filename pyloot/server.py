@@ -155,8 +155,12 @@ class PyLootServer:
         if req.path_info_peek() == "static":
             req.path_info_pop()
         logger.info("[static asset] %s", req.path_info)
-        with resources.path("pyloot", "static") as path:
-            return static.DirectoryApp(path)
+        try:
+            with resources.files("pyloot").joinpath("static") as path:
+                return static.DirectoryApp(path)
+        except AttributeError:
+            with resources.path("pyloot", "static") as path:
+                return static.DirectoryApp(path)
 
     def serve_forever(self, host: str = "0.0.0.0", port: int = 8000):
         httpd = simple_server.make_server(host, port, self)
