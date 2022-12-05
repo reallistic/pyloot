@@ -42,7 +42,7 @@ def _safe_getattr(obj: object, k: str, default: Any = Exception):
         if isinstance(obj, C3) or issubclass(obj, C3):  # type: ignore
             if k.startswith("ORIG_"):
                 return "__ignored_zope_interface_C3_{}__".format(k)
-    except (ImportError, TypeError):
+    except (ImportError, TypeError, Exception):
         pass
 
     try:

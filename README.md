@@ -1,7 +1,7 @@
 PyLoot
 ===========
 
-PyLoot is a memory leak detector based on [Dozer](https://github.com/mgedmin/dozer) and [vprof](https://github.com/nvdv/vprof) with added support for process based server workloads.
+PyLoot is a memory leak detector based on [Dozer](https://github.com/mgedmin/dozer) and [vprof](https://github.com/nvdv/vprof) with added support for servers with multiple workers/processes.
 
 
 This project is in active development and may contain bugs or otherwise work in ways not expected or intended.
@@ -11,7 +11,7 @@ This project is in active development and may contain bugs or otherwise work in 
 $ pip install pyloot
 ```
 
-# Usage
+# Basic API Usage
 ```python
 from pyloot import PyLoot
 loot = PyLoot()
@@ -49,8 +49,11 @@ loot.get_wsgi()
 ```
 
 
-# Running embedded
+# Running embedded within a server
 **Starlette/FastApi/ASGI**
+
+_see note below about bypassing the [multiprocessing check](#bypass-the-multiprocessing-check)_
+
 ```python
 from pyloot import PyLoot
 from fastapi import FastAPI
@@ -104,10 +107,14 @@ optional arguments:
 If pyloot detects it is running in a multiprocessing environment with an inmemory backend
 it will refuse to serve the webpages/requests.
 
-This is common for gunicorn servers running with multiple workers. If you run pyloot embedded in a gunicorn server with multiple workers statistics will be collected in each individual worker and a random worker will be selected when returning statistics. This can still give an idea of what is going on but is considered in accurate.
+This environment is common for gunicorn servers running with multiple workers.
+If you run pyloot embedded in a gunicorn server with multiple workers, statistics will be collected in each individual worker and a random worker will be selected when returning statistics.
+When using multiple workers, pyloot will give the most accurate information using the http backend.
+For dev servers or servers with really low traffic (e.g. <1 request per second), you can also reduce the workers to 1.
+Pyloot cannot detect how many workers are running so the bypass is still needed when only 1 worker is used.
 
 The WSGIMiddleware of starlette sets `environ["wsgi.multiprocess"]=True` regardless of the server.
-This can by bypassed with a wrapper **use with caution**:
+This can be bypassed with a wrapper **use with caution**:
 
 ```python
 pyloot = PyLoot()
@@ -123,7 +130,7 @@ app.mount("/_pyloot", WSGIMiddleware(pyloot_wrapper))
 
 # Disabling gzip encoding
 By default, the pyloot server will gzip encode the response metadata.
-If pyloot is running behind a middleware that gzip encodes data the encoding could happen twice.
+If pyloot is running behind a middleware that gzip encodes data, encoding can happen twice.
 This will result in the following error being shown in the UI:
 
 ```text

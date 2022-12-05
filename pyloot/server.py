@@ -156,7 +156,7 @@ class PyLootServer:
             req.path_info_pop()
         logger.info("[static asset] %s", req.path_info)
         try:
-            with resources.files("pyloot").joinpath("static") as path:
+            with resources.files("pyloot").joinpath("static") as path:  # type: ignore
                 return static.DirectoryApp(path)
         except AttributeError:
             with resources.path("pyloot", "static") as path:
